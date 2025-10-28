@@ -36,6 +36,14 @@ async function main() {
     create: { name: 'Test User', email: 'test@example.com', passwordHash: testPasswordHash }
   });
 
+  // Admin user (role: ADMIN)
+  const adminPasswordHash = await bcrypt.hash('Admin123!', 10);
+  await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: { passwordHash: adminPasswordHash },
+    create: { name: 'Admin', email: 'admin@example.com', passwordHash: adminPasswordHash, role: 'ADMIN' }
+  });
+
   // Courses
   const js101 = await prisma.course.upsert({
     where: { id: 'seed-js-101' },

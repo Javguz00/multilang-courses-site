@@ -15,6 +15,7 @@ model User {
   image        String?
   emailVerified DateTime?
   passwordHash String?
+  role         Role         @default(USER)
   // Relations
   courses      Course[]     @relation("CourseInstructor")
   orders       Order[]
@@ -39,6 +40,8 @@ model Course {
   id           String      @id @default(cuid())
   title        String
   description  String
+  syllabus     String?
+  mediaUrl     String?
   price        Decimal     @db.Decimal(10, 2)
   published    Boolean     @default(false)
   // Relations
@@ -51,6 +54,11 @@ model Course {
   reviews      Review[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 enum OrderStatus {

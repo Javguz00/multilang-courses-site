@@ -127,6 +127,16 @@ Steps to try locally:
   - Password: `Password123!`
 - Alternatively, create a user via the sign-up form at `/{locale}/auth/sign-up` and then sign in at `/{locale}/auth/sign-in`.
 
+### Admin access
+- Seeded admin user (after migrate + seed):
+  - Email: `admin@example.com`
+  - Password: `Admin123!`
+- Admin dashboard: `/{locale}/admin` (protected). Only users with `role = ADMIN` can access.
+- Manage:
+  - Courses: list, create, edit, delete (fields: title, price, short description, syllabus, media URL, category, published)
+  - Categories: create, update, delete
+- Note: After editing data via the dashboard, server actions will revalidate the admin pages automatically.
+
 
 ## Roadmap (aligned with execution plan)
 - i18n & RTL (fa/en with locale switcher)
