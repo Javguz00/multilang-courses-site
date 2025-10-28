@@ -35,6 +35,9 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.email = user.email ?? session.user.email ?? undefined;
         session.user.name = user.name ?? session.user.name ?? undefined;
+        // expose role/id for server/client checks (augment types or cast when needed)
+        (session.user as any).id = user.id;
+        (session.user as any).role = (user as any).role;
       }
       return session;
     }

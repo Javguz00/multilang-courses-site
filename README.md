@@ -137,6 +137,15 @@ Steps to try locally:
   - Categories: create, update, delete
 - Note: After editing data via the dashboard, server actions will revalidate the admin pages automatically.
 
+### After schema updates (types)
+- Whenever you change `prisma/schema.prisma`, run:
+  - `npx prisma migrate dev`
+  - `npx prisma generate`
+- This refreshes generated types so you can remove temporary `as any` casts inside admin server actions/pages (added to keep typechecks passing between schema changes and local generation).
+
+### Admin link visibility
+- The header shows an “Admin” link only when the current session user has `role = ADMIN`. Non-admin users won’t see it and will be redirected if they try to access `/admin` URLs directly.
+
 
 ## Roadmap (aligned with execution plan)
 - i18n & RTL (fa/en with locale switcher)
