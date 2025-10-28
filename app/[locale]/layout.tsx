@@ -1,4 +1,3 @@
-import ClientLocaleDir from '../components/ClientLocaleDir';
 import Header from '../components/Header';
 
 export default function LocaleLayout({
@@ -11,7 +10,6 @@ export default function LocaleLayout({
   const locale = params.locale || 'fa';
   return (
     <>
-      <ClientLocaleDir locale={locale} />
       <Header locale={locale} />
       {children}
     </>
