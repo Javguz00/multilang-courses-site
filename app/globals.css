@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Direction is controlled by documentElement.dir (set by ClientLocaleDir) */
+body { @apply bg-white text-gray-800; }
+.container { @apply max-w-6xl mx-auto px-4; }
+
+/* Optional RTL adjustments */
+html[dir="rtl"] .text-left { text-align: right; }
