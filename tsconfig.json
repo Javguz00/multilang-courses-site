@@ -14,11 +14,11 @@
     "skipLibCheck": true,
     "strict": true,
     "jsx": "preserve",
-    "types": [
-      "node"
-    ],
+    "types": ["node"],
     "baseUrl": ".",
-    "paths": {},
+    "paths": {
+      "@/*": ["*"]
+    },
     "allowJs": true,
     "noEmit": true,
     "incremental": true,

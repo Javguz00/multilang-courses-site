@@ -82,6 +82,26 @@ npm run db:seed
 - Avoid running `prisma migrate dev` during runtime. Run migrations via CI or locally against the production DB prior to deploy
 - Ensure `npx prisma generate` runs during build (automatically handled by `postinstall`/`prisma generate` when dependencies install)
 
+## Authentication (NextAuth Credentials)
+
+Environment variables (add to your `.env`):
+- `NEXTAUTH_URL=http://localhost:3000`
+- `NEXTAUTH_SECRET=...` (use a strong random string)
+
+Routes and pages:
+- API: `/api/auth/[...nextauth]` – NextAuth handler
+- Sign up: `/{locale}/auth/sign-up` – creates user (hashed password)
+- Sign in: `/{locale}/auth/sign-in` – credentials login
+- Profile (protected): `/{locale}/profile` – redirects to sign-in if not authenticated
+- Header displays session status (email) and offers sign in/out links
+
+Steps to try locally:
+1) Ensure DB is migrated and seeded (see Database section)
+2) Set NEXTAUTH_URL and NEXTAUTH_SECRET in `.env`
+3) Start dev server: `npm run dev`
+4) Visit `/fa/auth/sign-up` to create a user, then `/fa/auth/sign-in` to log in
+5) Check header shows your email and `/fa/profile` renders it; try the same under `/en/...`
+
 
 ## Roadmap (aligned with execution plan)
 - i18n & RTL (fa/en with locale switcher)
