@@ -26,11 +26,26 @@ styles/
 - start: Start production server
 - lint: Lint code
 - typecheck: TypeScript checks
+- test / test:e2e: Run Playwright end-to-end tests (starts the dev server automatically)
+- test:e2e:ui: Run Playwright tests in UI mode
 
 ## Getting Started
 1. Install dependencies: `npm install`
 2. Start dev server: `npm run dev`
 3. Open http://localhost:3000
+
+## E2E tests (Playwright)
+1. Install browsers once:
+  - `npx playwright install`
+2. Run tests:
+  - `npm run test` (headless)
+  - `npm run test:e2e:ui` (UI mode)
+
+What’s covered:
+- Redirect `/` → `/fa` and `locale` cookie set
+- `<html dir>` is `rtl` on `/fa` and `ltr` on `/en`
+- Locale switcher preserves query string and hash
+- Localized routes: `/fa|en/(courses|contact)` render
 
 ## Roadmap (aligned with execution plan)
 - i18n & RTL (fa/en with locale switcher)
