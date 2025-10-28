@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
+import { formatPrice } from '@/lib/currency';
 
 export default async function CourseDetailPage({ params }: { params: { locale: 'fa' | 'en', slug: string } }) {
   const locale = params.locale;
@@ -35,8 +36,14 @@ export default async function CourseDetailPage({ params }: { params: { locale: '
         </div>
         <aside className="lg:col-span-1">
           <div className="border rounded p-4 sticky top-24">
-            <div className="text-2xl font-semibold mb-2">${'{'}course.price.toString(){'}'}</div>
-            <button className="w-full px-4 py-2 bg-blue-600 text-white rounded">{isFa ? 'ثبت‌نام' : 'Enroll'}</button>
+            <div className="text-2xl font-semibold mb-2">{formatPrice(course.price.toString(), locale)}</div>
+            <form action={async (fd: FormData) => { 'use server';
+              const { addToCart } = await import('@/lib/cart');
+              addToCart(course.id, 1);
+            }}>
+              <input type="hidden" name="id" value={course.id} />
+              <button className="w-full px-4 py-2 bg-blue-600 text-white rounded" type="submit">{isFa ? 'افزودن به سبد' : 'Add to cart'}</button>
+            </form>
             <div className="text-xs text-gray-600 mt-3">
               {isFa ? 'مدرس' : 'Instructor'}: {course?.instructor?.name || course?.instructor?.email}
             </div>

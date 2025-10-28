@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatPrice } from '@/lib/currency';
 
 export type CourseCardProps = {
   locale: 'fa' | 'en';
@@ -32,7 +33,7 @@ export default function CourseCard({ locale, course }: CourseCardProps) {
           {course.language && <span>• {course.language}</span>}
         </div>
         <div className="mt-auto flex items-center justify-between">
-          <span className="font-medium">${'{'}course.price{'}'}</span>
+          <span className="font-medium">{formatPrice(course.price as any, locale)}</span>
           <Link className="text-blue-600 underline" href={`/${locale}/courses/${course.slug}`}>
             {isFa ? 'مشاهده' : 'View'}
           </Link>

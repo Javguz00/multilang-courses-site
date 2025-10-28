@@ -161,6 +161,10 @@ Notes on allowed origins:
 - Admin mutations (create/update/delete for categories and courses) are written to an `AuditLog` table with user id, action, entity, entity id, and optional metadata.
 - To apply the schema: run Prisma migrate/generate as described below.
 
+### Language filtering (canonical)
+- The canonical field for language is a single string column `Course.language` (optional).
+- Previous drafts considered `languageTags: string[]`; this is not used. If you need multi-language tags later, add a separate relation or array field and update filters accordingly.
+
 GDPR/PII considerations:
 - Avoid storing sensitive personal data inside `meta`.
 - Prefer IDs and minimal context (e.g., `{ slug: "js-101" }`) over full payloads.

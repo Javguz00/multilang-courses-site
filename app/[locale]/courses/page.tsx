@@ -73,7 +73,7 @@ export default async function CoursesListPage({ params, searchParams }: { params
 
   return (
     <div className="container py-8">
-      <h1 className="text-2xl font-semibold mb-4">{isFa ? 'دوره‌ها' : 'Courses'}</h1>
+      <h1 id="results-heading" tabIndex={-1} className="text-2xl font-semibold mb-4">{isFa ? 'دوره‌ها' : 'Courses'}</h1>
       <div className="mb-6">
         <CourseFilters locale={locale} categories={categories} />
       </div>
@@ -87,7 +87,7 @@ export default async function CoursesListPage({ params, searchParams }: { params
         </div>
       )}
       <div className="flex items-center justify-between mt-6">
-        <div>
+        <div aria-live="polite">
           <span>
             Page {page} of {totalPages} ({total} total)
           </span>

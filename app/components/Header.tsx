@@ -19,6 +19,7 @@ export default async function Header({ locale }: { locale: 'fa' | 'en' }) {
         <nav className="flex items-center gap-4 text-sm">
           <Link href={`/${locale}`}>{isFa ? 'خانه' : 'Home'}</Link>
           <Link href={`/${locale}/courses`}>{isFa ? 'دوره‌ها' : 'Courses'}</Link>
+          <Link href={`/${locale}/cart`}>{isFa ? 'سبد خرید' : 'Cart'}</Link>
           <Link href={`/${locale}/contact`}>{isFa ? 'Contact' : 'Contact'}</Link>
           <LocaleSwitcher locale={locale} />
           {isAdmin && (

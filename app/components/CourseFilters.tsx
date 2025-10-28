@@ -18,6 +18,8 @@ export default function CourseFilters({ locale, categories }: CourseFiltersProps
   const [language, setLanguage] = useState(sp.get('language') || '');
   const [priceMin, setPriceMin] = useState(sp.get('min') || '');
   const [priceMax, setPriceMax] = useState(sp.get('max') || '');
+  const [sort, setSort] = useState(sp.get('sort') || 'createdAt');
+  const [dir, setDir] = useState(sp.get('dir') || 'desc');
 
   // debounce search
   useEffect(() => {
@@ -26,6 +28,10 @@ export default function CourseFilters({ locale, categories }: CourseFiltersProps
       if (q) nsp.set('q', q); else nsp.delete('q');
       nsp.set('page', '1');
       router.replace(`${pathname}?${nsp.toString()}`);
+      setTimeout(() => {
+        const el = document.getElementById('results-heading');
+        el?.focus?.();
+      }, 0);
     }, 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -39,25 +45,31 @@ export default function CourseFilters({ locale, categories }: CourseFiltersProps
     if (language) nsp.set('language', language); else nsp.delete('language');
     if (priceMin) nsp.set('min', priceMin); else nsp.delete('min');
     if (priceMax) nsp.set('max', priceMax); else nsp.delete('max');
+    if (sort) nsp.set('sort', sort); else nsp.delete('sort');
+    if (dir) nsp.set('dir', dir); else nsp.delete('dir');
     nsp.set('page', '1');
     router.replace(`${pathname}?${nsp.toString()}`);
+    setTimeout(() => {
+      const el = document.getElementById('results-heading');
+      el?.focus?.();
+    }, 0);
   };
 
   const t = (k: string) => (isFa ? ({
-    search: 'جستجو', category: 'دسته‌بندی', level: 'سطح', language: 'زبان', priceMin: 'حداقل قیمت', priceMax: 'حداکثر قیمت', apply: 'اعمال'
+    search: 'جستجو', category: 'دسته‌بندی', level: 'سطح', language: 'زبان', priceMin: 'حداقل قیمت', priceMax: 'حداکثر قیمت', apply: 'اعمال', sort: 'مرتب‌سازی', direction: 'جهت'
   } as any)[k] : ({
-    search: 'Search', category: 'Category', level: 'Level', language: 'Language', priceMin: 'Min price', priceMax: 'Max price', apply: 'Apply'
+    search: 'Search', category: 'Category', level: 'Level', language: 'Language', priceMin: 'Min price', priceMax: 'Max price', apply: 'Apply', sort: 'Sort by', direction: 'Direction'
   } as any)[k]);
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-3 md:grid-cols-5 items-end">
+    <form onSubmit={onSubmit} className="grid gap-3 md:grid-cols-6 items-end" aria-label="Course filters">
       <div className="md:col-span-2">
-        <label className="block text-sm mb-1">{t('search')}</label>
-        <input value={q} onChange={(e) => setQ(e.target.value)} className="border p-2 w-full" placeholder={t('search')} />
+        <label className="block text-sm mb-1" htmlFor="filter-search">{t('search')}</label>
+        <input id="filter-search" aria-label={t('search')} value={q} onChange={(e) => setQ(e.target.value)} className="border p-2 w-full" placeholder={t('search')} />
       </div>
       <div>
-        <label className="block text-sm mb-1">{t('category')}</label>
-        <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="border p-2 w-full">
+        <label className="block text-sm mb-1" htmlFor="filter-category">{t('category')}</label>
+        <select id="filter-category" aria-label={t('category')} value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="border p-2 w-full">
           <option value="">--</option>
           {categories.map((c) => (
             <option key={c.id} value={c.id}>{c.name}</option>
@@ -65,8 +77,8 @@ export default function CourseFilters({ locale, categories }: CourseFiltersProps
         </select>
       </div>
       <div>
-        <label className="block text-sm mb-1">{t('level')}</label>
-        <select value={level} onChange={(e) => setLevel(e.target.value)} className="border p-2 w-full">
+        <label className="block text-sm mb-1" htmlFor="filter-level">{t('level')}</label>
+        <select id="filter-level" aria-label={t('level')} value={level} onChange={(e) => setLevel(e.target.value)} className="border p-2 w-full">
           <option value="">--</option>
           <option value="BEGINNER">BEGINNER</option>
           <option value="INTERMEDIATE">INTERMEDIATE</option>
@@ -74,20 +86,35 @@ export default function CourseFilters({ locale, categories }: CourseFiltersProps
         </select>
       </div>
       <div>
-        <label className="block text-sm mb-1">{t('language')}</label>
-        <select value={language} onChange={(e) => setLanguage(e.target.value)} className="border p-2 w-full">
+        <label className="block text-sm mb-1" htmlFor="filter-language">{t('language')}</label>
+        <select id="filter-language" aria-label={t('language')} value={language} onChange={(e) => setLanguage(e.target.value)} className="border p-2 w-full">
           <option value="">--</option>
           <option value="en">English</option>
           <option value="fa">فارسی</option>
         </select>
       </div>
-      <div className="md:col-span-2">
-        <label className="block text-sm mb-1">{t('priceMin')}</label>
-        <input value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="border p-2 w-full" placeholder="0" />
+      <div>
+        <label className="block text-sm mb-1" htmlFor="filter-sort">{t('sort')}</label>
+        <select id="filter-sort" aria-label={t('sort')} value={sort} onChange={(e) => setSort(e.target.value)} className="border p-2 w-full">
+          <option value="createdAt">Newest</option>
+          <option value="title">Title</option>
+          <option value="price">Price</option>
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm mb-1" htmlFor="filter-dir">{t('direction')}</label>
+        <select id="filter-dir" aria-label={t('direction')} value={dir} onChange={(e) => setDir(e.target.value)} className="border p-2 w-full">
+          <option value="desc">Desc</option>
+          <option value="asc">Asc</option>
+        </select>
       </div>
       <div className="md:col-span-2">
-        <label className="block text-sm mb-1">{t('priceMax')}</label>
-        <input value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className="border p-2 w-full" placeholder="999" />
+        <label className="block text-sm mb-1" htmlFor="filter-min">{t('priceMin')}</label>
+        <input id="filter-min" aria-label={t('priceMin')} value={priceMin} onChange={(e) => setPriceMin(e.target.value)} className="border p-2 w-full" placeholder="0" />
+      </div>
+      <div className="md:col-span-2">
+        <label className="block text-sm mb-1" htmlFor="filter-max">{t('priceMax')}</label>
+        <input id="filter-max" aria-label={t('priceMax')} value={priceMax} onChange={(e) => setPriceMax(e.target.value)} className="border p-2 w-full" placeholder="999" />
       </div>
       <div>
         <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">{t('apply')}</button>
