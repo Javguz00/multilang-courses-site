@@ -137,11 +137,43 @@ Steps to try locally:
   - Categories: create, update, delete
 - Note: After editing data via the dashboard, server actions will revalidate the admin pages automatically.
 
+### Price input (Decimal) and normalization
+- Admin forms expect monetary values with a dot as the decimal separator (e.g., `49.00`).
+- To avoid locale-specific issues, inputs are normalized on the server: whitespace is removed and commas are converted to dots before validation.
+- Validation requires a number with up to 2 decimal places. Examples accepted: `10`, `10.5`, `10.50`. Examples rejected: `10,5.2`, `10.500`, `10..5`.
+
+### CSRF origin checks for destructive actions
+- Destructive admin actions (e.g., deletions) enforce a basic CSRF origin check.
+- In development, all origins are allowed to ease local testing.
+- In production, the `origin` header must match either:
+  - `NEXTAUTH_URL` (protocol and host), or
+  - Any URL listed in `ALLOWED_ORIGINS` (comma-separated), e.g. `https://admin.example.com,https://app.example.com`.
+- Ensure `NEXTAUTH_URL` is set to your public HTTPS URL, and optionally set `ALLOWED_ORIGINS` for multi-domain setups or admin subdomains.
+
+Notes on allowed origins:
+- Exact matches only (protocol + host). Wildcards are NOT supported (e.g., `https://*.example.com` won’t match).
+- Examples:
+  - Allowed: `NEXTAUTH_URL=https://app.example.com` → origin must be exactly `https://app.example.com`
+  - Allowed: `ALLOWED_ORIGINS=https://admin.example.com,https://app.example.com`
+  - Not supported: `ALLOWED_ORIGINS=https://*.example.com`
+
+### Audit logging
+- Admin mutations (create/update/delete for categories and courses) are written to an `AuditLog` table with user id, action, entity, entity id, and optional metadata.
+- To apply the schema: run Prisma migrate/generate as described below.
+
+GDPR/PII considerations:
+- Avoid storing sensitive personal data inside `meta`.
+- Prefer IDs and minimal context (e.g., `{ slug: "js-101" }`) over full payloads.
+- Restrict access to audit logs to authorized staff only.
+
 ### After schema updates (types)
 - Whenever you change `prisma/schema.prisma`, run:
   - `npx prisma migrate dev`
   - `npx prisma generate`
 - This refreshes generated types so you can remove temporary `as any` casts inside admin server actions/pages (added to keep typechecks passing between schema changes and local generation).
+  
+New models in this iteration:
+- `AuditLog` – stores admin mutation logs
 
 ### Admin link visibility
 - The header shows an “Admin” link only when the current session user has `role = ADMIN`. Non-admin users won’t see it and will be redirected if they try to access `/admin` URLs directly.

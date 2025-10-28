@@ -3,37 +3,9 @@ import { Prisma } from '@prisma/client';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { requireAdmin } from '@/lib/authz';
-
-async function updateCourse(formData: FormData) {
-  'use server';
-  const id = String(formData.get('id') || '');
-  const title = String(formData.get('title') || '').trim();
-  const price = String(formData.get('price') || '').trim();
-  const description = String(formData.get('description') || '').trim();
-  const syllabus = String(formData.get('syllabus') || '').trim();
-  const mediaUrl = String(formData.get('mediaUrl') || '').trim();
-  const categoryId = String(formData.get('categoryId') || '').trim();
-  const published = formData.get('published') ? true : false;
-
-  const admin = await requireAdmin();
-  if (!admin) return;
-  if (!id) return;
-
-  await prisma.course.update({
-    where: { id },
-    data: ({
-      title,
-      description: description || (syllabus ? syllabus.slice(0, 140) : ''),
-      syllabus: syllabus || null,
-      mediaUrl: mediaUrl || null,
-      price: new Prisma.Decimal(price),
-      published,
-      categoryId
-    } as any)
-  });
-  revalidatePath('/fa/admin');
-  revalidatePath('/en/admin');
-}
+import CourseForm, { type CourseFormState } from '@/app/components/forms/CourseForm';
+import { courseSchema, type FieldErrors } from '@/lib/validation';
+import { logAdminAction } from '@/lib/audit';
 
 export default async function EditCoursePage({ params }: { params: { locale: string; id: string } }) {
   const admin = await requireAdmin();
@@ -42,50 +14,80 @@ export default async function EditCoursePage({ params }: { params: { locale: str
   }
   const [course, categories] = await Promise.all([
     prisma.course.findUnique({ where: { id: params.id } }),
-    prisma.category.findMany({ orderBy: { name: 'asc' } })
+    prisma.category.findMany({ orderBy: { name: 'asc' } }),
   ]);
   if (!course) redirect(`/${params.locale}/admin`);
+
+  async function updateCourseAction(_state: CourseFormState, formData: FormData): Promise<CourseFormState> {
+    'use server';
+    const admin = await requireAdmin();
+    if (!admin) return { message: 'Unauthorized' };
+    const id = String(formData.get('id') || '');
+    if (!id) return { message: 'Invalid request' };
+    const raw = {
+      title: String(formData.get('title') || ''),
+      slug: String(formData.get('slug') || ''),
+      price: String(formData.get('price') || ''),
+      description: String(formData.get('description') || ''),
+      syllabus: String(formData.get('syllabus') || ''),
+      mediaUrl: String(formData.get('mediaUrl') || ''),
+      categoryId: String(formData.get('categoryId') || ''),
+      published: !!formData.get('published'),
+    };
+    const parsed = courseSchema.safeParse(raw);
+    if (!parsed.success) {
+      const errors: FieldErrors<any> = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as string;
+        errors[key as any] = issue.message;
+      }
+      return { errors };
+    }
+    try {
+      const updated = await prisma.course.update({
+        where: { id },
+        data: ({
+          title: parsed.data.title.trim(),
+          slug: parsed.data.slug.trim(),
+          description: parsed.data.description?.trim() || (parsed.data.syllabus ? parsed.data.syllabus.slice(0, 140) : ''),
+          syllabus: parsed.data.syllabus || null,
+          mediaUrl: parsed.data.mediaUrl || null,
+          price: new Prisma.Decimal(parsed.data.price),
+          published: !!parsed.data.published,
+          categoryId: parsed.data.categoryId,
+        } as any),
+      });
+      await logAdminAction({ userId: admin.id, action: 'UPDATE', entity: 'Course', entityId: id, meta: { title: updated.title, slug: (updated as any).slug } });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        return { message: 'Duplicate value', errors: { slug: 'Slug already exists' } };
+      }
+      return { message: 'Server error' };
+    }
+    revalidatePath('/fa/admin');
+    revalidatePath('/en/admin');
+    redirect(`/${params.locale}/admin`);
+  }
+
   return (
     <div className="mx-auto max-w-3xl p-6">
       <h1 className="text-2xl font-semibold mb-4">Edit course</h1>
-      <form action={updateCourse} className="space-y-4">
-        <input type="hidden" name="id" value={course.id} />
-        <div>
-          <label className="block mb-1">Title</label>
-          <input name="title" defaultValue={course.title} className="border p-2 w-full" required />
-        </div>
-        <div>
-          <label className="block mb-1">Price (e.g., 49.00)</label>
-          <input name="price" defaultValue={course.price.toString()} className="border p-2 w-full" required />
-        </div>
-        <div>
-          <label className="block mb-1">Short description</label>
-          <textarea name="description" defaultValue={course.description || ''} className="border p-2 w-full" rows={2} />
-        </div>
-        <div>
-          <label className="block mb-1">Syllabus</label>
-          <textarea name="syllabus" defaultValue={(course as any).syllabus || ''} className="border p-2 w-full" rows={6} />
-        </div>
-        <div>
-          <label className="block mb-1">Media URL</label>
-          <input name="mediaUrl" defaultValue={(course as any).mediaUrl || ''} className="border p-2 w-full" />
-        </div>
-        <div>
-          <label className="block mb-1">Category</label>
-          <select name="categoryId" defaultValue={course.categoryId} className="border p-2 w-full" required>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
-        <label className="inline-flex items-center gap-2">
-          <input type="checkbox" name="published" defaultChecked={course.published} /> <span>Published</span>
-        </label>
-        <div className="flex gap-2">
-          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Save</button>
-          <a className="px-4 py-2 border rounded" href={`/${params.locale}/admin`}>Cancel</a>
-        </div>
-      </form>
+      <CourseForm
+        action={updateCourseAction}
+        initial={{
+          id: course.id,
+          title: course.title,
+          slug: (course as any).slug,
+          price: course.price,
+          description: course.description,
+          syllabus: (course as any).syllabus || '',
+          mediaUrl: (course as any).mediaUrl || '',
+          categoryId: course.categoryId,
+          published: course.published,
+        }}
+        categories={categories}
+        locale={params.locale as any}
+      />
     </div>
   );
 }

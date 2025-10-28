@@ -42,8 +42,11 @@ model Course {
   description  String
   syllabus     String?
   mediaUrl     String?
+  slug         String      @unique
   price        Decimal     @db.Decimal(10, 2)
   published    Boolean     @default(false)
+  level        Level?
+  language     String?
   // Relations
   categoryId   String
   category     Category    @relation(fields: [categoryId], references: [id])
@@ -54,11 +57,21 @@ model Course {
   reviews      Review[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
+
+  @@index([published])
+  @@index([level])
+  @@index([language])
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }
 
 enum OrderStatus {
@@ -127,6 +140,21 @@ model Review {
 
   @@index([courseId])
   @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 // NextAuth.js models

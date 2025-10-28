@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import { requireAdmin, getSessionUser } from '@/lib/authz';
 import { revalidatePath } from 'next/cache';
+import { courseSchema, type FieldErrors } from '@/lib/validation';
+import CourseForm, { type CourseFormState } from '@/app/components/forms/CourseForm';
+import { logAdminAction } from '@/lib/audit';
 
 async function createCourse(formData: FormData) {
   'use server';
@@ -39,6 +42,55 @@ async function createCourse(formData: FormData) {
 
 export default async function NewCoursePage({ params }: { params: { locale: string } }) {
   const admin = await requireAdmin();
+  async function createCourseAction(_state: CourseFormState, formData: FormData): Promise<CourseFormState> {
+    'use server';
+    const admin = await requireAdmin();
+    if (!admin) return { message: 'Unauthorized' };
+    const raw = {
+      title: String(formData.get('title') || ''),
+      slug: String(formData.get('slug') || ''),
+      price: String(formData.get('price') || ''),
+      description: String(formData.get('description') || ''),
+      syllabus: String(formData.get('syllabus') || ''),
+      mediaUrl: String(formData.get('mediaUrl') || ''),
+      categoryId: String(formData.get('categoryId') || ''),
+      published: !!formData.get('published'),
+    };
+    const parsed = courseSchema.safeParse(raw);
+    if (!parsed.success) {
+      const errors: FieldErrors<any> = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as string;
+        errors[key as any] = issue.message;
+      }
+      return { errors };
+    }
+    const instructor = await getSessionUser();
+    try {
+      const created = await prisma.course.create({
+        data: ({
+          title: parsed.data.title.trim(),
+          slug: parsed.data.slug.trim(),
+          description: parsed.data.description?.trim() || (parsed.data.syllabus ? parsed.data.syllabus.slice(0, 140) : ''),
+          syllabus: parsed.data.syllabus || null,
+          mediaUrl: parsed.data.mediaUrl || null,
+          price: new Prisma.Decimal(parsed.data.price),
+          published: !!parsed.data.published,
+          categoryId: parsed.data.categoryId,
+          instructorId: instructor!.id
+        } as any)
+      });
+      await logAdminAction({ userId: admin.id, action: 'CREATE', entity: 'Course', entityId: created.id, meta: { title: created.title, slug: (created as any).slug } });
+    } catch (e: any) {
+      if (e?.code === 'P2002') {
+        return { message: 'Duplicate value', errors: { slug: 'Slug already exists' } };
+      }
+      return { message: 'Server error' };
+    }
+    revalidatePath('/fa/admin');
+    revalidatePath('/en/admin');
+    redirect(`/${params.locale}/admin`);
+  }
   if (!admin) {
     redirect(`/${params.locale}/auth/sign-in?callbackUrl=/${params.locale}/admin/courses/new`);
   }
@@ -46,44 +98,7 @@ export default async function NewCoursePage({ params }: { params: { locale: stri
   return (
     <div className="mx-auto max-w-3xl p-6">
       <h1 className="text-2xl font-semibold mb-4">New course</h1>
-      <form action={createCourse} className="space-y-4">
-        <div>
-          <label className="block mb-1">Title</label>
-          <input name="title" className="border p-2 w-full" required />
-        </div>
-        <div>
-          <label className="block mb-1">Price (e.g., 49.00)</label>
-          <input name="price" className="border p-2 w-full" required />
-        </div>
-        <div>
-          <label className="block mb-1">Short description</label>
-          <textarea name="description" className="border p-2 w-full" rows={2} />
-        </div>
-        <div>
-          <label className="block mb-1">Syllabus</label>
-          <textarea name="syllabus" className="border p-2 w-full" rows={6} />
-        </div>
-        <div>
-          <label className="block mb-1">Media URL</label>
-          <input name="mediaUrl" className="border p-2 w-full" />
-        </div>
-        <div>
-          <label className="block mb-1">Category</label>
-          <select name="categoryId" className="border p-2 w-full" required>
-            <option value="">Select a category</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>{cat.name}</option>
-            ))}
-          </select>
-        </div>
-        <label className="inline-flex items-center gap-2">
-          <input type="checkbox" name="published" /> <span>Published</span>
-        </label>
-        <div className="flex gap-2">
-          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Create</button>
-          <a className="px-4 py-2 border rounded" href={`/${params.locale}/admin`}>Cancel</a>
-        </div>
-      </form>
+      <CourseForm action={createCourseAction} categories={categories} locale={params.locale as any} />
     </div>
   );
 }
