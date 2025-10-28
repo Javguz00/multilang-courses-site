@@ -182,6 +182,71 @@ New models in this iteration:
 ### Admin link visibility
 - The header shows an “Admin” link only when the current session user has `role = ADMIN`. Non-admin users won’t see it and will be redirected if they try to access `/admin` URLs directly.
 
+## Commerce & Stripe (local testing)
+
+1) Environment variables
+
+- Copy `.env.example` to `.env` and set:
+  - `DATABASE_URL` → your Postgres connection string
+  - `NEXTAUTH_URL=http://localhost:3000` (or your dev URL)
+  - `NEXTAUTH_SECRET=...` strong random value
+  - `STRIPE_SECRET_KEY=sk_test_...` (from Stripe dashboard → Developers → API keys)
+  - `STRIPE_WEBHOOK_SECRET=whsec_...` (from Stripe CLI `stripe listen` or Dashboard webhook)
+  - Optional currency overrides: `DEFAULT_CURRENCY`, `CURRENCY_EN`, `CURRENCY_FA`
+  - Optional email sending: set `EMAIL_ENABLED=true` and `SMTP_*` variables (see `.env.example`)
+
+2) Apply schema and generate client
+
+```
+npx prisma migrate dev
+npx prisma generate
+```
+
+3) Start dev server
+
+```
+npm run dev
+```
+
+4) Stripe webhook in dev
+
+Use the Stripe CLI to forward events to your local webhook handler:
+
+```
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+Copy the printed `whsec_...` to `STRIPE_WEBHOOK_SECRET` in your `.env`.
+
+5) Test checkout flow
+
+- Visit `/{locale}/courses/[slug]` → Add to cart
+- Go to `/{locale}/cart` → Checkout
+- You’ll be redirected to Stripe Checkout. Use a test card (e.g. `4242 4242 4242 4242`, any future expiry, any CVC)
+- On success, you’ll be redirected to `/{locale}/checkout/success`
+- On cancel, you’ll be redirected to `/{locale}/checkout/cancel` and the cart is retained
+
+6) Verify database state
+
+- `Order` should be `PAID`
+- `OrderItem` rows created for each course purchased
+- `Enrollment` rows created (unique per `userId, courseId`)
+
+7) Verify email (optional)
+
+- If `EMAIL_ENABLED=true` and SMTP vars are set, a minimal order confirmation email is sent
+- If disabled or misconfigured, sending is skipped (logged) to keep the webhook fast and reliable
+
+8) Stripe Dashboard
+
+- Check Developers → Webhooks for successful event deliveries
+- Retries on transient failures are automatic; the endpoint is idempotent for enrollments
+
+## My Enrollments
+
+- Authenticated users can view their purchased courses at `/{locale}/profile/enrollments`
+- If not logged in, users are redirected to `/{locale}/auth/sign-in` with a callback back to enrollments
+
 
 ## Roadmap (aligned with execution plan)
 - i18n & RTL (fa/en with locale switcher)
