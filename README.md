@@ -47,6 +47,42 @@ What’s covered:
 - Locale switcher preserves query string and hash
 - Localized routes: `/fa|en/(courses|contact)` render
 
+## Database (PostgreSQL with Prisma)
+
+Prisma is configured for PostgreSQL. Provide a valid `DATABASE_URL` via environment variables.
+
+1) Configure env
+- Copy `.env.example` to `.env`
+- Set `DATABASE_URL` to your Postgres connection string, e.g.
+  - `postgresql://postgres:postgres@localhost:5432/multilang_courses?schema=public`
+
+2) Install Prisma and generate client
+```
+npm install
+npx prisma generate
+```
+
+3) Create database schema (dev)
+```
+npx prisma migrate dev --name init
+```
+
+4) Seed sample data
+```
+npm run db:seed
+```
+- Expected console output: `Seed completed: { users: 2, courses: 2, orderId: <id> }`
+
+5) Inspect DB
+- Verify tables exist: User, Course, Category, Order, OrderItem, Enrollment, Coupon, Review
+- Confirm seeded rows for categories, users, courses, an order, enrollment, and a review
+
+### Vercel deployment notes
+- Set `DATABASE_URL` in Vercel Project Settings → Environment Variables (Production/Preview as needed)
+- Avoid running `prisma migrate dev` during runtime. Run migrations via CI or locally against the production DB prior to deploy
+- Ensure `npx prisma generate` runs during build (automatically handled by `postinstall`/`prisma generate` when dependencies install)
+
+
 ## Roadmap (aligned with execution plan)
 - i18n & RTL (fa/en with locale switcher)
 - Data model & sample courses

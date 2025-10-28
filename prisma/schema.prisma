@@ -1,0 +1,118 @@
+// Prisma schema for PostgreSQL
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  passwordHash String?
+  // Relations
+  courses      Course[]     @relation("CourseInstructor")
+  orders       Order[]
+  enrollments  Enrollment[]
+  reviews      Review[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  courses   Course[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Course {
+  id           String      @id @default(cuid())
+  title        String
+  description  String
+  price        Decimal     @db.Decimal(10, 2)
+  published    Boolean     @default(false)
+  // Relations
+  categoryId   String
+  category     Category    @relation(fields: [categoryId], references: [id])
+  instructorId String
+  instructor   User        @relation("CourseInstructor", fields: [instructorId], references: [id])
+  orderItems   OrderItem[]
+  enrollments  Enrollment[]
+  reviews      Review[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+model Order {
+  id         String       @id @default(cuid())
+  userId     String
+  user       User         @relation(fields: [userId], references: [id])
+  total      Decimal      @db.Decimal(10, 2)
+  status     OrderStatus  @default(PENDING)
+  couponId   String?
+  coupon     Coupon?      @relation(fields: [couponId], references: [id])
+  items      OrderItem[]
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  courseId  String
+  course    Course  @relation(fields: [courseId], references: [id])
+  price     Decimal @db.Decimal(10, 2)
+  quantity  Int     @default(1)
+}
+
+model Enrollment {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, courseId])
+}
+
+model Coupon {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  percentage Int?
+  amount    Decimal? @db.Decimal(10, 2)
+  expiresAt DateTime?
+  maxUses   Int?
+  usedCount Int      @default(0)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([courseId])
+  @@index([userId])
+}
