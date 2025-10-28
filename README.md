@@ -114,6 +114,19 @@ Steps to try locally:
 ### Anti-abuse note (MVP)
 - The registration endpoint implements a basic per-IP rate limit (default: 5 requests/min). For production, consider a distributed limiter (Redis) and CAPTCHA.
 
+### NextAuth production cookies & security
+- Set `NEXTAUTH_URL` to your public HTTPS URL in production, e.g. `https://example.com`.
+- Ensure `NEXTAUTH_SECRET` is set to a strong random string.
+- Cookies are automatically marked `secure` when `NEXTAUTH_URL` is HTTPS. Keep `SameSite=Lax` unless you have cross-site flows.
+- If you’re behind a reverse proxy or platform that alters host headers, set `NEXTAUTH_TRUST_HOST=1` and make sure `x-forwarded-*` headers are forwarded correctly.
+- If using subdomains and you need session sharing, consider configuring a cookie domain (e.g., `.example.com`) via NextAuth cookies config.
+
+### Test credentials (for QA)
+- After running `npx prisma migrate dev` and `npm run db:seed`, a test account is available:
+  - Email: `test@example.com`
+  - Password: `Password123!`
+- Alternatively, create a user via the sign-up form at `/{locale}/auth/sign-up` and then sign in at `/{locale}/auth/sign-in`.
+
 
 ## Roadmap (aligned with execution plan)
 - i18n & RTL (fa/en with locale switcher)

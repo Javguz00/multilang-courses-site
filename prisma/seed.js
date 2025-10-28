@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 const { PrismaClient, Prisma } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
@@ -25,6 +26,14 @@ async function main() {
     where: { email: 'bob@example.com' },
     update: {},
     create: { name: 'Bob Student', email: 'bob@example.com' }
+  });
+
+  // Test login user (with credentials)
+  const testPasswordHash = await bcrypt.hash('Password123!', 10);
+  await prisma.user.upsert({
+    where: { email: 'test@example.com' },
+    update: {},
+    create: { name: 'Test User', email: 'test@example.com', passwordHash: testPasswordHash }
   });
 
   // Courses
