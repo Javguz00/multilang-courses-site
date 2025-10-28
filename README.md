@@ -102,6 +102,18 @@ Steps to try locally:
 4) Visit `/fa/auth/sign-up` to create a user, then `/fa/auth/sign-in` to log in
 5) Check header shows your email and `/fa/profile` renders it; try the same under `/en/...`
 
+### Password policy and hashing
+- Minimum password length: 6 characters (MVP). For production, increase to 8–12 and add complexity rules as needed.
+- Passwords are hashed with bcrypt using 10 salt rounds (`bcrypt.hash(password, 10)`). You can raise this for stronger security at the cost of CPU.
+
+### Redirects for unauthenticated users
+- Protected pages (e.g., `/{locale}/profile`) redirect to `/{locale}/auth/sign-in` when not signed in.
+- A `callbackUrl` query param is provided so, after successful sign-in, users are sent back to the original page.
+- To customize, change the redirect target or `callbackUrl` logic inside your server components/handlers.
+
+### Anti-abuse note (MVP)
+- The registration endpoint implements a basic per-IP rate limit (default: 5 requests/min). For production, consider a distributed limiter (Redis) and CAPTCHA.
+
 
 ## Roadmap (aligned with execution plan)
 - i18n & RTL (fa/en with locale switcher)
