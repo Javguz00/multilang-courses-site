@@ -55,6 +55,7 @@ model Course {
   orderItems   OrderItem[]
   enrollments  Enrollment[]
   reviews      Review[]
+  assets       CourseAsset[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
 
@@ -140,6 +141,24 @@ model Review {
 
   @@index([courseId])
   @@index([userId])
+}
+
+enum AssetKind {
+  VIDEO
+  FILE
+}
+
+model CourseAsset {
+  id        String    @id @default(cuid())
+  courseId  String
+  course    Course    @relation(fields: [courseId], references: [id])
+  title     String
+  kind      AssetKind
+  url       String
+  sizeBytes Int?
+  createdAt DateTime  @default(now())
+
+  @@index([courseId])
 }
 
 model AuditLog {

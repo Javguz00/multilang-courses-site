@@ -32,9 +32,14 @@ export default async function EnrollmentsPage({ params }: { params: { locale: 'f
                 <p className="font-medium">{enr.course.title}</p>
                 <p className="text-sm text-gray-600">{t('ثبت‌نام در', 'Enrolled on')}: {new Date(enr.createdAt).toLocaleDateString(locale === 'fa' ? 'fa-IR' : 'en-US')}</p>
               </div>
-              <a href={`/${locale}/courses/${enr.course.slug}`} className="text-blue-600 hover:underline">
-                {t('مشاهده دوره', 'View course')}
-              </a>
+              <div className="flex gap-3">
+                <a href={`/${locale}/courses/${enr.course.slug}`} className="text-blue-600 hover:underline">
+                  {t('صفحه دوره', 'Course page')}
+                </a>
+                <a href={`/${locale}/courses/${enr.course.slug}/learn`} className="text-emerald-700 hover:underline">
+                  {t('محتوای دوره', 'Go to content')}
+                </a>
+              </div>
             </li>
           ))}
         </ul>
