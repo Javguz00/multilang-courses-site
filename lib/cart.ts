@@ -28,16 +28,18 @@ export function writeCart(items: CartItem[]) {
 }
 
 export function addToCart(id: string, qty = 1) {
+  // Courses are single-seat purchases; cap quantity to 1
   const items = readCart();
   const i = items.findIndex((it) => it.id === id);
-  if (i >= 0) items[i].qty = Math.min(99, items[i].qty + qty);
-  else items.push({ id, qty: Math.max(1, Math.min(99, qty)) });
+  if (i >= 0) items[i].qty = 1;
+  else items.push({ id, qty: 1 });
   writeCart(items);
 }
 
 export function updateQty(id: string, qty: number) {
+  // Courses are single-seat purchases; enforce qty=1
   let items = readCart();
-  items = items.map((it) => (it.id === id ? { ...it, qty: Math.max(1, Math.min(99, qty)) } : it));
+  items = items.map((it) => (it.id === id ? { ...it, qty: 1 } : it));
   writeCart(items);
 }
 

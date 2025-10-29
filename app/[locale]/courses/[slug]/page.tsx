@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { formatPrice } from '@/lib/currency';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export default async function CourseDetailPage({ params }: { params: { locale: 'fa' | 'en', slug: string } }) {
   const locale = params.locale;
@@ -12,6 +14,12 @@ export default async function CourseDetailPage({ params }: { params: { locale: '
   if (!course || !course.published) {
     redirect(`/${locale}/courses`);
   }
+  const session = await getServerSession(authOptions);
+  const userId = (session?.user as any)?.id as string | undefined;
+  const alreadyEnrolled = userId
+    ? !!(await prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: course.id } } }))
+    : false;
+
   return (
     <div className="container py-8">
       <div className="grid gap-6 lg:grid-cols-3">
@@ -37,13 +45,18 @@ export default async function CourseDetailPage({ params }: { params: { locale: '
         <aside className="lg:col-span-1">
           <div className="border rounded p-4 sticky top-24">
             <div className="text-2xl font-semibold mb-2">{formatPrice(course.price.toString(), locale)}</div>
-            <form action={async (fd: FormData) => { 'use server';
-              const { addToCart } = await import('@/lib/cart');
-              addToCart(course.id, 1);
-            }}>
-              <input type="hidden" name="id" value={course.id} />
-              <button className="w-full px-4 py-2 bg-blue-600 text-white rounded" type="submit">{isFa ? 'افزودن به سبد' : 'Add to cart'}</button>
-            </form>
+            {alreadyEnrolled ? (
+              <div className="text-green-700 font-medium">
+                {isFa ? 'شما در این دوره ثبت‌نام کرده‌اید.' : 'You are already enrolled in this course.'}
+              </div>
+            ) : (
+              <form action={async () => { 'use server';
+                const { addToCart } = await import('@/lib/cart');
+                addToCart(course.id, 1);
+              }}>
+                <button className="w-full px-4 py-2 bg-blue-600 text-white rounded" type="submit">{isFa ? 'افزودن به سبد' : 'Add to cart'}</button>
+              </form>
+            )}
             <div className="text-xs text-gray-600 mt-3">
               {isFa ? 'مدرس' : 'Instructor'}: {course?.instructor?.name || course?.instructor?.email}
             </div>

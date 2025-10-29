@@ -183,6 +183,13 @@ New models in this iteration:
 - The header shows an “Admin” link only when the current session user has `role = ADMIN`. Non-admin users won’t see it and will be redirected if they try to access `/admin` URLs directly.
 
 ## Commerce & Stripe (local testing)
+### Refunds and partial reimbursements (operational guidance)
+
+- Stripe refunds: Initiate refunds in the Stripe Dashboard or via API. Webhook events (`charge.refunded`, `payment_intent.canceled`) should be handled to reflect state.
+- Orders: Mark the corresponding `Order` as `REFUNDED` (full) or introduce a new status such as `PARTIALLY_REFUNDED` for partial refunds.
+- Enrollments: For full refunds, consider removing or deactivating the user's `Enrollment` records for refunded courses. For partial refunds (some items), remove only those course enrollments.
+- Auditing: Record a line in `AuditLog` (operator and reason) to preserve a trail.
+- Next phase: Add a dedicated refunds handler that validates ownership and refund eligibility, and processes side-effects idempotently.
 
 1) Environment variables
 

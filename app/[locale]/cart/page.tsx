@@ -20,8 +20,8 @@ export default async function CartPage({ params }: { params: { locale: 'fa' | 'e
     .map((it) => {
       const c = courses.find((x) => x.id === it.id);
       if (!c) return null;
-      const lineTotal = new Prisma.Decimal(c.price).mul(it.qty);
-      return { id: c.id, slug: (c as any).slug, title: c.title, price: c.price, qty: it.qty, lineTotal };
+      const lineTotal = new Prisma.Decimal(c.price); // qty is always 1 for courses
+      return { id: c.id, slug: (c as any).slug, title: c.title, price: c.price, qty: 1, lineTotal };
     })
     .filter(Boolean) as Array<{ id: string; slug: string; title: string; price: Prisma.Decimal; qty: number; lineTotal: Prisma.Decimal }>;
   const total = merged.reduce((acc, it) => acc.add(it.lineTotal), new Prisma.Decimal(0));
@@ -41,16 +41,13 @@ export default async function CartPage({ params }: { params: { locale: 'fa' | 'e
                     <div className="font-medium">{it.title}</div>
                     <div className="text-sm text-gray-600">{formatPrice(it.price.toString(), locale)}</div>
                   </div>
-                  <form action={updateActionForm} className="flex items-center gap-2">
-                    <input type="hidden" name="id" value={it.id} />
-                    <label className="text-sm">Qty</label>
-                    <input name="qty" type="number" min={1} max={99} defaultValue={it.qty} className="border p-2 w-20" />
-                    <button className="px-3 py-2 border rounded" type="submit">{isFa ? 'به‌روزرسانی' : 'Update'}</button>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">1 ×</span>
                     <form action={removeActionForm}>
                       <input type="hidden" name="id" value={it.id} />
                       <button className="px-3 py-2 text-red-600 underline" type="submit">{isFa ? 'حذف' : 'Remove'}</button>
                     </form>
-                  </form>
+                  </div>
                   <div className="font-medium">{formatPrice(it.lineTotal.toString(), locale)}</div>
                 </li>
               ))}

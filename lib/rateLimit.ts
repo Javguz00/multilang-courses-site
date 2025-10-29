@@ -51,3 +51,9 @@ export function createRateLimiter(options: RateLimitOptions) {
 
 // A default limiter: 5 requests per minute.
 export const defaultRegisterLimiter = createRateLimiter({ limit: 5, windowMs: 60_000 });
+
+// Convenience one-off function
+export function rateLimit(key: string, limit: number, windowMs: number): boolean {
+  const limiter = createRateLimiter({ limit, windowMs });
+  return limiter.check(key).allowed;
+}
