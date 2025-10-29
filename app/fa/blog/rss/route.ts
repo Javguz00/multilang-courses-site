@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
   const siteTitle = "بلاگ فروش دوره‌ها";
   const siteLink = `${origin}/fa/blog`;
   const siteDesc = "نکات، راهنماها و بروزرسانی‌ها برای زبان‌آموزان و مدرسین.";
+  const lastBuildDate = new Date().toUTCString();
 
   const items = posts
     .map((p) => {
@@ -27,12 +28,15 @@ export async function GET(request: NextRequest) {
     })
     .join("");
 
+  const selfHref = `${origin}/fa/blog/rss`;
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escape(siteTitle)}</title>
     <link>${siteLink}</link>
     <description>${escape(siteDesc)}</description>
+    <atom:link href="${selfHref}" rel="self" type="application/rss+xml" />
+    <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <language>fa-IR</language>${items}
   </channel>
 </rss>`;

@@ -300,3 +300,11 @@ Blog routes are locale-aware under `app/[locale]/blog`:
 - Post: `/{locale}/blog/[slug]`
 
 Sample posts are defined in `lib/blog.ts` with localized copies (same slug per locale). Update this file to add or edit posts.
+
+### Legal policy placeholders (Review required)
+
+The texts in Terms, Privacy, and Refund Policy pages are placeholders intended for development purposes only. Before going to production:
+
+- Have a qualified professional review and provide project-specific Terms of Service, Privacy Policy, and Refund Policy.
+- Ensure the policies reflect your data handling, cookies, third-party services, and refund practices.
+- Update the content in `app/{en,fa}/(terms|privacy|refund-policy)/page.tsx` accordingly and verify translations.

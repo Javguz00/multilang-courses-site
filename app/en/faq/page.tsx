@@ -3,6 +3,8 @@ export const metadata = {
   description: 'Common questions about accessing courses, refunds, and reviews.',
 };
 
+import FaqAccordion from "@/app/components/FaqAccordion";
+
 export default function FaqEn() {
   const faqs = [
     {
@@ -22,14 +24,7 @@ export default function FaqEn() {
   return (
     <main className="container py-10 max-w-3xl">
       <h1 className="text-3xl font-semibold mb-6">FAQ</h1>
-      <div className="space-y-6">
-        {faqs.map((f, i) => (
-          <div key={i} className="rounded-lg border p-4">
-            <h3 className="font-semibold mb-2">{f.q}</h3>
-            <p className="text-gray-700">{f.a}</p>
-          </div>
-        ))}
-      </div>
+      <FaqAccordion faqs={faqs} />
     </main>
   );
 }

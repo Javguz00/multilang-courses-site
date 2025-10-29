@@ -3,6 +3,8 @@ export const metadata = {
   description: 'پرسش و پاسخ درباره دسترسی به دوره‌ها، بازپرداخت و ثبت نظر.',
 };
 
+import FaqAccordion from "@/app/components/FaqAccordion";
+
 export default function FaqFa() {
   const faqs = [
     {
@@ -21,15 +23,8 @@ export default function FaqFa() {
 
   return (
     <main className="container py-10 max-w-3xl" dir="rtl">
-      <h1 className="text-3xl font-semibold mb-6">پرسشهای متداول</h1>
-      <div className="space-y-6">
-        {faqs.map((f, i) => (
-          <div key={i} className="rounded-lg border p-4">
-            <h3 className="font-semibold mb-2">{f.q}</h3>
-            <p className="text-gray-700">{f.a}</p>
-          </div>
-        ))}
-      </div>
+      <h1 className="text-3xl font-semibold mb-6">پرسش‌های متداول</h1>
+      <FaqAccordion faqs={faqs} rtl />
     </main>
   );
 }
