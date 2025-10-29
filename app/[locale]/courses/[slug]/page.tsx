@@ -5,7 +5,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ReviewForm } from '@/app/components/ReviewForm';
 
-export default async function CourseDetailPage({ params }: { params: { locale: 'fa' | 'en', slug: string } }) {
+export default async function CourseDetailPage({ params, searchParams }: { params: { locale: 'fa' | 'en', slug: string }, searchParams?: Record<string, string | string[] | undefined> }) {
   const locale = params.locale;
   const isFa = locale === 'fa';
   const course = (await prisma.course.findFirst({
@@ -20,11 +20,19 @@ export default async function CourseDetailPage({ params }: { params: { locale: '
   const alreadyEnrolled = userId
     ? !!(await prisma.enrollment.findUnique({ where: { userId_courseId: { userId, courseId: course.id } } }))
     : false;
+  const err = (searchParams?.err as string | undefined) || undefined;
   const reviews = await prisma.review.findMany({ where: { courseId: course.id }, include: { user: true }, orderBy: { createdAt: 'desc' } } as any);
   const avgRating = reviews.length ? Math.round((reviews.reduce((s: number, r: any) => s + r.rating, 0) / reviews.length) * 10) / 10 : null;
 
   return (
     <div className="container py-8">
+      {err === 'need_enrollment' && (
+        <div className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+          {isFa
+            ? 'برای دسترسی به محتوای دوره باید ثبت‌نام کنید. با افزودن دوره به سبد خرید و تکمیل پرداخت، دسترسی شما فعال می‌شود.'
+            : 'Access to course content requires enrollment. Add the course to your cart and complete checkout to unlock access.'}
+        </div>
+      )}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <h1 className="text-2xl font-semibold mb-2">{course.title}</h1>

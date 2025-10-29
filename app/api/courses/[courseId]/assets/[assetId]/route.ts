@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
   const enrolled = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: user.id, courseId: course.id } } });
   if (!enrolled) return new NextResponse('Forbidden', { status: 403 });
 
-  const asset = await (prisma as any).courseAsset.findUnique({ where: { id: params.assetId } });
+  const asset = await prisma.courseAsset.findUnique({ where: { id: params.assetId } });
   if (!asset || asset.courseId !== course.id) return new NextResponse('Not found', { status: 404 });
 
   const url = asset.url as string;

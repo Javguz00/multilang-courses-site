@@ -178,11 +178,28 @@ GDPR/PII considerations:
   
 New models in this iteration:
 - `AuditLog` – stores admin mutation logs
+- `CourseAsset` – per-course videos/files for protected content delivery
+
+Additional constraints:
+- `Review`: `@@unique([userId, courseId])` to prevent duplicate reviews per user per course
 
 ### Admin link visibility
 - The header shows an “Admin” link only when the current session user has `role = ADMIN`. Non-admin users won’t see it and will be redirected if they try to access `/admin` URLs directly.
 
 ## Commerce & Stripe (local testing)
+### Protected assets: redirects vs. signed URLs
+
+For this MVP, the protected asset route (`/api/courses/[courseId]/assets/[assetId]`) performs an authorization check (user must be enrolled) and then issues a 302 redirect to the remote asset URL. This is simple and fast, but it has limitations:
+
+- Anyone who receives the destination URL can share it and bypass your app entirely.
+- Redirects do not prevent hotlinking or long-term reuse if the URL is public and long-lived.
+
+For stronger protection in a future iteration, consider one of these approaches:
+
+- Private object storage + short-lived signed URLs (S3 pre-signed URLs, GCS Signed URLs, Azure SAS). The API route issues a signed URL only after access checks. Links expire quickly (e.g., 1–5 minutes) and are bound to the object path.
+- Reverse proxy/streaming via the app or an edge function. The route streams the file or video (with Range support) after validating access, so the origin is never exposed. This costs more CPU/bandwidth but keeps URLs private.
+
+Either approach can be combined with watermarking and/or token-based anti-hotlinking at the CDN layer.
 ### Refunds and partial reimbursements (operational guidance)
 
 - Stripe refunds: Initiate refunds in the Stripe Dashboard or via API. Webhook events (`charge.refunded`, `payment_intent.canceled`) should be handled to reflect state.
@@ -267,3 +284,19 @@ Copy the printed `whsec_...` to `STRIPE_WEBHOOK_SECRET` in your `.env`.
 
 ## Notes
 This is the initial scaffold. Functional features will be implemented in subsequent subtasks.
+
+## Marketing pages and blog
+
+Static, localized marketing pages live under the locale folders:
+
+- English: `app/en/(about|contact|faq|terms|privacy|refund-policy)`
+- Persian (fa): `app/fa/(about|contact|faq|terms|privacy|refund-policy)`
+
+The Contact pages include a client-only form stub (no backend). It simulates a send and shows a confirmation banner.
+
+Blog routes are locale-aware under `app/[locale]/blog`:
+
+- List: `/{locale}/blog`
+- Post: `/{locale}/blog/[slug]`
+
+Sample posts are defined in `lib/blog.ts` with localized copies (same slug per locale). Update this file to add or edit posts.

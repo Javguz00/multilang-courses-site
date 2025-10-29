@@ -141,6 +141,7 @@ model Review {
 
   @@index([courseId])
   @@index([userId])
+  @@unique([userId, courseId])
 }
 
 enum AssetKind {

@@ -18,7 +18,14 @@ export function ReviewForm({ courseId, locale }: { courseId: string; locale: 'fa
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rating, comment }),
       });
-      if (!res.ok) throw new Error('Failed');
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (res.status === 409 && data?.error) {
+          setMessage(data.error);
+          return;
+        }
+        throw new Error('Failed');
+      }
       setMessage(isFa ? 'با موفقیت ثبت شد.' : 'Saved.');
     } catch {
       setMessage(isFa ? 'خطا در ثبت نظر.' : 'Failed to save review.');

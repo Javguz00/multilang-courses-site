@@ -1,10 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Built-in i18n routing
-  i18n: {
-    locales: ['fa', 'en'],
-    defaultLocale: 'fa'
-  }
+  // Using explicit locale-prefixed routes (app/en, app/fa) and middleware-based redirect.
+  // Built-in Next.js i18n is disabled to avoid conflicts during static prerender/export.
 };
 
 module.exports = nextConfig;

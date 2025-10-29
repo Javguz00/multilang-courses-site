@@ -15,9 +15,9 @@ export default async function LearnPage({ params }: { params: { locale: 'fa' | '
   if (!course) notFound();
 
   const enrolled = await prisma.enrollment.findUnique({ where: { userId_courseId: { userId: user.id, courseId: course.id } } });
-  if (!enrolled) redirect(`/${locale}/courses/${params.slug}`);
+  if (!enrolled) redirect(`/${locale}/courses/${params.slug}?err=need_enrollment`);
 
-  const assets = (await (prisma as any).courseAsset.findMany({ where: { courseId: course.id }, orderBy: { createdAt: 'asc' } })) as any[];
+  const assets = await prisma.courseAsset.findMany({ where: { courseId: course.id }, orderBy: { createdAt: 'asc' } });
 
   return (
     <main className="container py-8">

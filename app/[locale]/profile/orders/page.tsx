@@ -13,11 +13,11 @@ export default async function OrdersPage({ params }: { params: { locale: 'fa' | 
   const user = await prisma.user.findUnique({ where: { email: session.user.email! } });
   if (!user) redirect(`/${locale}/auth/sign-in?callbackUrl=/${locale}/profile/orders`);
 
-  const orders = (await prisma.order.findMany({
+  const orders = await prisma.order.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: 'desc' },
     include: { items: { include: { course: true } } },
-  } as any)) as any[];
+  });
 
   const isFa = locale === 'fa';
   return (
@@ -27,7 +27,7 @@ export default async function OrdersPage({ params }: { params: { locale: 'fa' | 
         <div className="text-gray-600">{isFa ? 'سفارشی ندارید.' : 'No orders yet.'}</div>
       ) : (
         <div className="space-y-4">
-          {orders.map((o: any) => (
+          {orders.map((o) => (
             <div key={o.id} className="border rounded p-4">
               <div className="flex items-center justify-between">
                 <div className="font-medium">{new Date(o.createdAt).toLocaleString()}</div>
@@ -35,7 +35,7 @@ export default async function OrdersPage({ params }: { params: { locale: 'fa' | 
               </div>
               <div className="text-sm text-gray-700 mt-1">{formatPrice(o.total.toString(), locale)}</div>
               <ul className="mt-3 list-disc pl-5 text-sm">
-                {o.items.map((it: any) => (
+                {o.items.map((it) => (
                   <li key={it.id}>{it.course.title} — {formatPrice(it.price.toString(), locale)}</li>
                 ))}
               </ul>

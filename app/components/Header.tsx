@@ -20,7 +20,8 @@ export default async function Header({ locale }: { locale: 'fa' | 'en' }) {
           <Link href={`/${locale}`}>{isFa ? 'خانه' : 'Home'}</Link>
           <Link href={`/${locale}/courses`}>{isFa ? 'دوره‌ها' : 'Courses'}</Link>
           <Link href={`/${locale}/cart`}>{isFa ? 'سبد خرید' : 'Cart'}</Link>
-          <Link href={`/${locale}/contact`}>{isFa ? 'Contact' : 'Contact'}</Link>
+          <Link href={`/${locale}/blog`}>{isFa ? 'بلاگ' : 'Blog'}</Link>
+          <Link href={`/${locale}/contact`}>{isFa ? 'تماس' : 'Contact'}</Link>
           <LocaleSwitcher locale={locale} />
           {isAdmin && (
             <Link href={`/${locale}/admin`}>{isFa ? 'مدیریت' : 'Admin'}</Link>

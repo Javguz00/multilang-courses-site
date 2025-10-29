@@ -15,13 +15,13 @@ export default async function DownloadsPage({ params }: { params: { locale: 'fa'
   // Fetch all assets for user's enrolled courses
   const enrollments = await prisma.enrollment.findMany({ where: { userId: user.id } });
   const courseIds = enrollments.map((e) => e.courseId);
-  let assets: any[] = [];
+  let assets: { id: string; title: string; kind: string; url: string; courseId: string; course?: { title: string } }[] = [];
   if (courseIds.length) {
-    assets = (await (prisma as any).courseAsset.findMany({
+    assets = await prisma.courseAsset.findMany({
       where: { courseId: { in: courseIds } },
       orderBy: { createdAt: 'desc' },
       include: { course: true },
-    })) as any[];
+    });
   }
 
   const isFa = locale === 'fa';
