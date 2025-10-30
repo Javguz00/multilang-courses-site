@@ -7,6 +7,7 @@ $items = Get-ChildItem -Path $root -Recurse -File -Force | Where-Object {
   $_.FullName -notmatch "\\node_modules\\" -and
   $_.FullName -notmatch "\\.next\\" -and
   $_.FullName -notmatch "\\.git\\" -and
+  $_.Name -notmatch "^\.env(\..*)?$" -and
   $_.Name -notmatch "^\.DS_Store$" -and
   $_.Extension -ne ".zip"
 } | ForEach-Object { $_.FullName }

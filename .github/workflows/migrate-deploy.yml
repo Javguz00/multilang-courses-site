@@ -1,0 +1,44 @@
+name: Run Prisma Migrations (Production)
+
+on:
+  workflow_dispatch: {}
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: migrate-prod
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Prisma migrate deploy
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'pull_request' }}
+    env:
+      # Set in GitHub → Settings → Secrets and variables → Actions
+      DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+      PRISMA_HIDE_UPDATE_MESSAGE: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (no scripts)
+        run: npm ci --omit=optional --ignore-scripts
+
+      - name: Show Prisma version
+        run: npx prisma -v
+
+      - name: Deploy migrations
+        run: npx prisma migrate deploy
+
+      - name: Generate Prisma Client (optional)
+        run: npx prisma generate

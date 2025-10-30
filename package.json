@@ -15,7 +15,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "db:seed": "prisma db seed"
+    "db:seed": "prisma db seed",
+    "package:zip:ps": "powershell -NoProfile -File ./scripts/package-archive.ps1",
+    "package:zip:sh": "bash ./scripts/package-archive.sh"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",

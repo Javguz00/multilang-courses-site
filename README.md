@@ -292,6 +292,36 @@ Full guide: `docs/DEPLOYMENT.md`.
 - Check Developers → Webhooks for successful event deliveries
 - Retries on transient failures are automatic; the endpoint is idempotent for enrollments
 
+## Packaging
+
+Use the helper script to generate a clean zip archive:
+
+```
+powershell -NoProfile -File .\scripts\package-archive.ps1
+```
+
+The script excludes `node_modules/`, `.next/`, `.git/`, and any `.env*` files to avoid bundling secrets. Verify your archive doesn’t contain credentials before sharing.
+
+On macOS/Linux (requires `zip`):
+
+```
+npm run package:zip:sh
+```
+
+In CI (Linux), install `zip` then run the same script. See `docs/OPERATIONS.md` for details.
+
+## Final QA Checklist
+
+Run through `docs/QA.md` before releasing. It covers:
+- Navigation & i18n (locale redirects/switcher, rtl/ltr)
+- DB-backed courses pages (list/detail), image attributes, JSON-LD
+- Cart & Checkout (Stripe) including webhook processing and enrollments
+- Auth and protected content; admin access control
+- SEO (sitemap, robots, canonical, JSON-LD) and policy pages
+- Analytics toggle (GA/Matomo/none)
+- Environment sanity (NEXT_PUBLIC_SITE_URL, NEXTAUTH_URL/TRUST_HOST, Stripe keys/webhook)
+- Backups and operations
+
 ## My Enrollments
 
 - Authenticated users can view their purchased courses at `/{locale}/profile/enrollments`
