@@ -35,6 +35,12 @@ When running behind a proxy/CDN (Vercel, Cloudflare, Nginx), also set:
 - STRIPE_SECRET_KEY: `sk_test_...` (test) or `sk_live_...` (live)
 - STRIPE_WEBHOOK_SECRET: `whsec_...` from Stripe CLI (dev) or Dashboard webhook (prod)
 
+### Zarinpal (Iran domestic)
+- PAYMENT_PROVIDER: `stripe` (default) or `zarinpal`
+- ZARINPAL_MERCHANT_ID: Your merchant ID from Zarinpal
+- ZARINPAL_SANDBOX: `true|false` (use `true` for testing)
+- Pricing note: When using Zarinpal, course prices are expected to be in Tomans. Ensure your course `price` values reflect Tomans for fa locale.
+
 ### SEO
 - NEXT_PUBLIC_SITE_URL
   - What it does: Sets the absolute origin used to build canonical URLs, the base for `/sitemap.xml`, the `sitemap` property in `robots.txt`, and absolute URLs in SSR JSON-LD.

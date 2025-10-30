@@ -18,11 +18,12 @@ Use this checklist before releasing. Where possible, run checks against a produc
 - [ ] Images have `loading="lazy"` and `decoding="async"`
 - [ ] JSON-LD present on course detail (`<script type="application/ld+json">`)
 
-## 3) Cart & Checkout (Stripe)
+## 3) Cart & Checkout (Stripe or Zarinpal)
 - [ ] Add to cart from course detail
-- [ ] Checkout initiates Stripe Checkout with correct price(s)
+- [ ] Checkout initiates the configured provider and shows correct price(s)
 - [ ] Payment (test mode or live low-value) redirects to success page
-- [ ] Webhook processes `checkout.session.completed` and marks Order `PAID`
+- [ ] Stripe: Webhook processes `checkout.session.completed` and marks Order `PAID`
+- [ ] Zarinpal: Callback verification marks Order `PAID`
 - [ ] `OrderItem` entries exist; `Enrollment` created for purchased courses
 
 ## 4) Auth & Protected Content

@@ -64,6 +64,19 @@ Testing production (test mode)
 5. Perform a low-value live test (e.g., $1) or a $0 authorization if applicable. Verify webhook deliveries and DB updates (Order → PAID, Enrollment created).
 6. Remove any preview/test endpoints from the live environment to avoid confusion.
 
+## 5) Zarinpal (optional Iran domestic gateway)
+
+If you need a domestic gateway for Iran, enable Zarinpal:
+
+1. In envs, set:
+	- `PAYMENT_PROVIDER=zarinpal`
+	- `ZARINPAL_MERCHANT_ID=...`
+	- `ZARINPAL_SANDBOX=true` for testing (false for production).
+2. Ensure your course prices are set in Tomans.
+3. Callback URL is automatically set to:
+	- `${NEXTAUTH_URL}/api/payments/zarinpal/callback` (the app appends `orderId` and `locale`)
+4. Test a payment on fa locale; verify redirect to success page and DB updates (Order → PAID, Enrollment created).
+
 ## 5) Deploy
 - Push to `main` (or your deployment branch)
 - In Vercel, trigger a deployment

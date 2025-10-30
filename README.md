@@ -248,7 +248,8 @@ Copy the printed `whsec_...` to `STRIPE_WEBHOOK_SECRET` in your `.env`.
 
 - Visit `/{locale}/courses/[slug]` → Add to cart
 - Go to `/{locale}/cart` → Checkout
-- You’ll be redirected to Stripe Checkout. Use a test card (e.g. `4242 4242 4242 4242`, any future expiry, any CVC)
+- If PAYMENT_PROVIDER=`stripe`: You’ll be redirected to Stripe Checkout. Use a test card (e.g. `4242 4242 4242 4242`, any future expiry, any CVC)
+- If PAYMENT_PROVIDER=`zarinpal` or locale=`fa`: You’ll be redirected to Zarinpal. Use sandbox mode for tests (`ZARINPAL_SANDBOX=true`).
 - On success, you’ll be redirected to `/{locale}/checkout/success`
 - On cancel, you’ll be redirected to `/{locale}/checkout/cancel` and the cart is retained
 
