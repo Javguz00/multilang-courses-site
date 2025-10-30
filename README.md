@@ -82,6 +82,8 @@ npm run db:seed
 - Avoid running `prisma migrate dev` during runtime. Run migrations via CI or locally against the production DB prior to deploy
 - Ensure `npx prisma generate` runs during build (automatically handled by `postinstall`/`prisma generate` when dependencies install)
 
+See `docs/DEPLOYMENT.md` for a complete, step-by-step Vercel guide including DB provisioning and Stripe webhook setup.
+
 ## Authentication (NextAuth Credentials)
 
 Environment variables (add to your `.env`):
@@ -262,6 +264,30 @@ Copy the printed `whsec_...` to `STRIPE_WEBHOOK_SECRET` in your `.env`.
 - If disabled or misconfigured, sending is skipped (logged) to keep the webhook fast and reliable
 
 8) Stripe Dashboard
+## Feature checklist
+
+- [x] Next.js 14 App Router, TypeScript, Tailwind
+- [x] Localized routes (fa/en), RTL support, locale cookie + middleware
+- [x] Auth (NextAuth Credentials), protected profile/enrollments
+- [x] Admin dashboard (categories, courses CRUD) with audit logging
+- [x] Cart + Stripe Checkout, webhook-driven enrollment
+- [x] Blog with per-locale RSS
+- [x] SEO: metadata, robots.ts, sitemap.ts, SSR JSON-LD for Course
+- [x] Analytics toggle (GA/Matomo) via env flags
+- [x] Accessibility basics (headings, labels), localized 404
+- [x] Security hardening: Zod validation, CSRF origin checks, rate limiting, honeypot
+- [x] Scripts for Windows to build, start, verify SEO/analytics
+
+## Deployment quickstart (Vercel)
+
+1. Provision Postgres (Neon/Supabase) and copy `DATABASE_URL`
+2. Set env vars in Vercel (see `.env.example` and `docs/CONFIGURATION.md`)
+3. Run prod migrations:
+  - `npx prisma migrate deploy` using your production `DATABASE_URL`
+4. Create Stripe webhook for `https://yourdomain.com/api/stripe/webhook` and set `STRIPE_WEBHOOK_SECRET`
+5. Deploy and verify endpoints (`/sitemap.xml`, `/robots.txt`), analytics (if enabled), JSON-LD, and checkout
+
+Full guide: `docs/DEPLOYMENT.md`.
 
 - Check Developers → Webhooks for successful event deliveries
 - Retries on transient failures are automatic; the endpoint is idempotent for enrollments
