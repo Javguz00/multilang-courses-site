@@ -21,7 +21,7 @@ export default function CourseCard({ locale, course }: CourseCardProps) {
     <div className="border rounded-lg overflow-hidden flex flex-col">
       {course.mediaUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={course.mediaUrl} alt={course.title} className="aspect-video object-cover" />
+        <img src={course.mediaUrl} alt={course.title} className="aspect-video object-cover" loading="lazy" decoding="async" />
       ) : (
         <div className="aspect-video bg-gray-100" />
       )}

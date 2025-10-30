@@ -53,6 +53,7 @@ async function main() {
       title: 'JavaScript 101',
       description: 'Beginner-friendly course to learn modern JavaScript.',
       slug: 'javascript-101',
+      mediaUrl: 'https://via.placeholder.com/800x450?text=JavaScript+101',
       price: new Prisma.Decimal('49.00'),
       published: true,
       categoryId: web.id,
@@ -68,6 +69,7 @@ async function main() {
       title: 'Python for Data Science',
       description: 'Hands-on introduction to data science with Python.',
       slug: 'python-for-data-science',
+      mediaUrl: 'https://via.placeholder.com/800x450?text=Python+for+Data+Science',
       price: new Prisma.Decimal('79.00'),
       published: true,
       categoryId: data.id,
@@ -106,8 +108,13 @@ async function main() {
   });
 
   // Review
-  await prisma.review.create({
-    data: {
+  await prisma.review.upsert({
+    where: { userId_courseId: { userId: bob.id, courseId: js101.id } },
+    update: {
+      rating: 5,
+      comment: 'Great intro course!'
+    },
+    create: {
       userId: bob.id,
       courseId: js101.id,
       rating: 5,

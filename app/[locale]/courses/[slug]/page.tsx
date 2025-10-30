@@ -4,6 +4,30 @@ import { formatPrice } from '@/lib/currency';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { ReviewForm } from '@/app/components/ReviewForm';
+import type { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: { locale: 'fa' | 'en', slug: string } }): Promise<Metadata> {
+  const course = await prisma.course.findFirst({ where: ({ slug: params.slug } as any) });
+  if (!course) return {};
+  const isFa = params.locale === 'fa';
+  const title = course.title;
+  const description = (course.description as string)?.slice(0, 160);
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const url = `${base}/${params.locale}/courses/${course.slug}`;
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'article',
+    },
+    alternates: {
+      canonical: url,
+    },
+  };
+}
 
 export default async function CourseDetailPage({ params, searchParams }: { params: { locale: 'fa' | 'en', slug: string }, searchParams?: Record<string, string | string[] | undefined> }) {
   const locale = params.locale;
@@ -26,6 +50,39 @@ export default async function CourseDetailPage({ params, searchParams }: { param
 
   return (
     <div className="container py-8">
+      {/* JSON-LD Course schema for SEO (SSR-rendered for crawlers) */}
+      <script
+        id="course-jsonld"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Course',
+            name: course.title,
+            description: course.description,
+            provider: {
+              '@type': 'Organization',
+              name: 'Programming Courses',
+            },
+            offers: {
+              '@type': 'Offer',
+              price: course.price?.toString?.() ?? String(course.price),
+              priceCurrency: process.env[`CURRENCY_${locale.toUpperCase()}`] || process.env.DEFAULT_CURRENCY || 'USD',
+              url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${locale}/courses/${course.slug}`,
+              availability: 'https://schema.org/InStock',
+            },
+            ...(avgRating
+              ? {
+                  aggregateRating: {
+                    '@type': 'AggregateRating',
+                    ratingValue: avgRating,
+                    reviewCount: reviews.length,
+                  },
+                }
+              : {}),
+          }),
+        }}
+      />
       {err === 'need_enrollment' && (
         <div className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
           {isFa
@@ -44,7 +101,7 @@ export default async function CourseDetailPage({ params, searchParams }: { param
           </div>
           { course?.mediaUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={course.mediaUrl} alt={course.title} className="w-full rounded mb-4" />
+            <img src={course.mediaUrl} alt={course.title} className="w-full rounded mb-4" loading="lazy" decoding="async" />
           ) : null }
           <p className="mb-6 whitespace-pre-line">{course.description}</p>
           {course?.syllabus && (
